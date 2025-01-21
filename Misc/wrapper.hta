@@ -1,0 +1,456 @@
+<html>
+	<head>
+	<HTA:APPLICATION />
+     
+	</head>
+	<body>
+		<script language="VBscript">
+		
+			<!--   Read Scenarios sheet  -->
+			Dim resultsValue
+			resultsValue = 0
+			Dim test_cases
+			Set test_cases = CreateObject("Scripting.Dictionary")
+			
+			test_cases.RemoveAll
+			Dim objExcel
+			Dim objWB
+			Dim objSH
+			Dim filepath 
+			<!-- filepath = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Test Scenarios\Ravi.xlsx" -->
+			
+
+			filepath = "D:\workspace\SuccessFactors\TestScenarios\tssample.xls"
+
+			
+			Set objExcel = CreateObject("Excel.Application")
+			objExcel.Application.visible = False
+			Set objWB = objExcel.Workbooks.Open(filepath,,True)
+			Set objSH = objExcel.ActiveWorkbook.Worksheets(1)
+			
+			lastrow = objSH.UsedRange.Rows.Count
+			For h = 2 to lastrow Step 1
+				test_cases.Add h-1, objSH.Cells(h,1).Value & "#" & objSH.Cells(h,3).Value
+			Next
+			
+			objExcel.ActiveWorkbook.Close
+			objExcel.Workbooks.Close
+			objExcel.Application.Quit
+			Set objExcel = Nothing
+
+
+			<!-- Completed Reading scenarios sheet -->
+		
+			Dim siebel_browser_value
+			Dim portal_browser_value
+
+
+			document.write("<table id=0 width=100%>")
+			document.write("<tr>")
+			document.write("<td align=left>")
+			<!-- document.write("<image src='Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Miscellaneous\logo.png' height=50 width=100>") -->
+			document.write("<image src='D:\workspace\SuccessFactors\Misc\speridian_logo.png' height=50 width=100>")
+			document.write("</image>")
+			document.write("</td>")
+			document.write("<td align=right>")
+			<!-- document.write("<image src='Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Miscellaneous\Sov_logo.png' height=70 width=100>") -->
+			document.write("</image>")
+			document.write("</td>")
+			
+			document.write("</tr>")
+			document.write("</table>")
+			
+
+			document.write("<form name='form1'>")
+			document.write("<h4>Please set the following</h4>")
+
+			document.write("<table id='1' border=0>")
+			document.write("<tr>")
+			document.write("<td>")
+			document.write("Select browser: " )
+			document.write("</td>")
+			document.write("<td>")
+			document.write("<select id='siebel_browser'>")
+			document.write("<option value='Select_Browser'>Select Browser</option>")
+			document.write("<option value='IE'>Internet Explorer</option>")
+			document.write("<option value='FF'>Firefox</option>")
+			document.write("<option value='CR'>Google Chrome</option>")
+			document.write("</select>" )
+			document.write("</td>")
+			document.write("</tr>")
+			
+			<!-- document.write("<tr>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("Select browser for Portal: " ) -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("<select id='portal_browser'>") -->
+			<!-- document.write("<option value='Select_Browser'>Select Browser</option>") -->
+			<!-- document.write("<option value='Internet Explorer'>Internet Explorer</option>") -->
+			<!-- document.write("<option value='Firefox'>Firefox</option>") -->
+			<!-- document.write("<option value='Chrome'>Google Chrome</option>") -->
+			<!-- document.write("</select>") -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("</tr>") -->
+			
+			
+			<!-- Read Environments --->
+			
+			Dim efobj
+			Dim efrobj
+			Dim edobj 
+			Dim efile 
+			Dim i
+			Dim env
+			Dim portal_url
+			Dim siebel_url
+			Dim edobj_new
+
+			efile = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Configurations\environments.txt" 
+			efile = "D:\workspace\SuccessFactors\DataFiles\environments.txt"
+			
+			i=0
+			Set edobj = CreateObject("Scripting.Dictionary")
+			Set efobj = CreateObject("Scripting.FileSystemObject")
+			Set efrobj = efobj.OpenTextFile(efile, 1, True)
+
+			edobj.RemoveAll
+
+			Do Until efrobj.AtEndOfStream
+				edobj.Add i, efrobj.ReadLine
+				i = i+1
+			Loop
+
+			For i=0 to edobj.count-1 Step 1
+				env = Split(edobj(i), "#")(0)
+				portal_url = Split(edobj(i), "#")(1)
+				<!-- siebel_url = Split(edobj(i), "#")(2) -->
+
+			Next
+			efrobj.Close
+
+			Set efrobj = Nothing
+			Set efobj = Nothing
+
+
+
+			document.write("<tr>")
+			document.write("<td>")
+			document.write("Select environment for execution: " )
+			document.write("</td>")
+			document.write("<td>")
+			document.write("<select id='environment' onchange='Get_Environment_Value()'>")
+
+			document.write("<option value='Select_Environment'>Select Environment</option>")
+
+			For i = 0 to edobj.count-1 Step 1
+				value1 = trim(Split(edobj(i), "#")(0))
+				<!-- value2 = Split(value1, "#")(0) -->
+				document.write("<option value='" & value1 & "'>" & value1 & "</option>")	
+			Next
+			
+			<!-- document.write("<option value='STG'>STG</option>") -->
+			<!-- document.write("<option value='DEV3'>DEV3</option>") -->
+			document.write("</select>" )
+			document.write("</td>")
+			document.write("</tr>")
+			
+			<!-- document.write("<tr>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("URL that will be used for Siebel: " ) -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("<input type='text' value='' id='display1' size='100' ></input>") -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("</tr>") -->
+			
+			document.write("<tr>")
+			document.write("<td>")
+			document.write("URL that will be used for execution: " )
+			document.write("</td>")
+			document.write("<td>")
+			document.write("<input type='text' value='' id='display2' size='100' ></input>")
+			document.write("</td>")
+			document.write("</tr>")
+			<!-- document.write("</table>") -->
+			
+			<!-- document.write("<tr>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("URL that will be used for WEX: " ) -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("<td>") -->
+			<!-- document.write("<input type='text' value='https://vtdevqatest.benaissance.com/HBEpoint/PortalLogin.aspx' id='display3' size='100' ></input>") -->
+			<!-- document.write("</td>") -->
+			<!-- document.write("</tr>") -->
+			document.write("</table>")
+
+			
+			document.write("<input type='Reset' value='Reset Values'></input>")
+			document.write("<input type='button' value='Set Credentials' onclick='Set_Credentials()'></input>")
+			document.write("<input type='button' value='Save Settings' onclick='Save_Settings()'></input>")
+			document.write("<input type='button' value='ReFresh App' onClick='refresh()'>")
+			
+			document.write("<hr size=5 color=blue>")
+			document.write("<h4>Select test cases to execute from the following</h4>")
+			document.write("<input type='button' value='Select All' onclick='Select_All()'></input>")
+			
+						
+			
+			
+			document.write("<table id='2' border=0>")
+			
+			
+			For h = 1 to test_cases.count Step 1
+				document.write("<tr>")
+				document.write("<td>")
+				test_id = Split(test_cases.Item(h), "#")(0)
+				test_name = Split(test_cases.Item(h), "#")(1)
+				document.write test_id
+				document.write("</td>")
+				document.write("<td>")
+				document.write("<input type='checkbox' name='test_cases_selected' id='" & test_id & "' value='" & test_id & "'>")
+				document.write("</td>")
+				document.write("<td>")
+				document.write test_name
+				document.write("</td>")
+				document.write("</tr>")
+				
+			Next
+			
+			
+			document.write("</table>")
+			
+			document.write("<input type='button' value = 'Save Test Case Selection' onclick='Save_Test_Case_Selection()'></input>")
+			document.write("<input type='button' value = 'Execute Test Suite' onclick='Execute_Test_Suite()'></input>")
+			
+			document.write("<input type='button' value = 'View Results' onclick='View_Results()' id='vr' name='vr' disabled></input>")
+			document.write("<input type='button' value = 'View Historic Results' onclick='View_Historic_Results()'></input>")	
+			document.write("<hr size=5 color=blue>")
+			
+			
+			document.write("</form>")
+		</script>
+		<script language="VBscript">
+			Function Get_Environment_Value()
+
+				For i = 0 to edobj.count-1 Step 1
+					if Instr(edobj(i), document.getElementById("environment").Value ) Then
+						document.getElementById("display2").value = trim(Split(edobj(i), "#")(1))
+						<!-- document.getElementById("display1").value = trim(Split(edobj(i), "#")(2)) -->
+						Exit For
+					End If
+				Next
+
+
+
+
+
+				<!--
+				<!-- document.getElementById("display1").value = "https://crm" & Lcase(document.getElementById("environment").Value) & ".healthconnect.in.vermont.gov/onegate_enu/" -->
+				<!-- If Instr(Ucase(document.getElementById("environment").Value), "DEV3") Then -->
+				<!-- 	document.getElementById("display2").value = "https://portaldev3.healthconnect.vermont.gov/web/guest" -->
+				<!--	Else -->
+				<!--	document.getElementById("display2").value = "https://portal" & Lcase(document.getElementById("environment").Value) & ".healthconnect.in.vermont.gov/web/guest" -->
+				<!-- End If
+				
+				<!-- Select Case Ucase(document.getElementById("environment").Value) -->
+				<!-- 	Case "STG" -->
+				<!-- 		document.getElementById("display1").value = "https://crmstg.healthconnect.in.vermont.gov/onegate_enu/" -->
+				<!-- 		document.getElementById("display2").value = "https://portalstg.healthconnect.in.vermont.gov/web/guest" -->
+				<!-- 	Case "DEV3" -->
+				<!-- 		document.getElementById("display1").value = "https://crmdev3.healthconnect.in.vermont.gov/onegate_enu/" -->
+				<!-- 		document.getElementById("display2").value = "https://portaldev3.healthconnect.vermont.gov/web/guest" -->
+				<!-- End Select -->
+				-->				
+			End Function		
+		</Script>
+		
+		<script language="VBscript">
+			Function Save_Settings()
+				ForWriting = 3
+				Set obj = CreateObject("Scripting.FileSystemObject")
+				Dim xmlfile
+				<!-- xmlfile = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Configurations\" -->
+				xmlfile = "D:\workspace\SuccessFactors\DataFiles\"
+				<!-- Set writer = obj.CreateTextFile(xmlfile & "configurations.txt", True) -->
+				Set writer = obj.CreateTextFile(xmlfile & "config.txt", True)
+
+				
+				writer.writeline("browser=" & form1.siebel_browser.Value)
+				writer.writeline("url=" & form1.display2.Value)
+				
+				'writer.writeline("<?xml version='1.0' encoding='UTF-8'?>")
+				'writer.writeline("<Environment>")
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Siebel_Browser_Type</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[" & form1.siebel_browser.Value & "]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Portal_Browser_Type</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[" & form1.portal_browser.Value & "]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Portal_URL</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[" & form1.display2.Value & "]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Siebel_URL</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[" & form1.display1.Value & "]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Total_Executed</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[0]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Passed</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[0]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Failed</Name>")
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[0]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+
+				'writer.writeline(vbTab & "<Variable>")
+				'writer.writeline(vbTab & vbTab & "<Name>Wex_Exchange_Point_Url</Name>")
+				<!-- writer.writeline(vbTab & vbTab & "<Value><![CDATA[https://vtdevqatest.benaissance.com/HBEpoint/PortalLogin.aspx]]></Value>") -->
+				'writer.writeline(vbTab & vbTab & "<Value><![CDATA[" & form1.display3.Value & "]]></Value>")
+				'writer.writeline(vbTab & "</Variable>")
+
+
+
+				'writer.writeline("</Environment>")
+				writer.close
+				
+				
+				
+				obj.CopyFile xmlfile & "config.txt" , xmlfile & "config.properties"
+				obj.DeleteFile xmlfile & "config.txt"
+				Set obj = Nothing
+				'Dim xmlDom
+				'Set xmlDom = CreateObject("Microsoft.XMLDOM")
+    				'XmlDom.async = False
+				'XmlDom.Load(xmlfile & "configurations.xml")
+    				'XmlDom.Save(xmlfile & "configurations.xml")
+
+				Msgbox "Completed Setting up of Configuration data"				
+
+			End Function		
+		</Script>
+		
+		<script language="VBscript">
+			Function Save_Test_Case_Selection()
+				<!-- scenario_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Test Scenarios\Ravi.xlsx" -->
+				'scenario_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Test Scenarios\scenarios.xlsx"
+				scenario_file = "D:\workspace\SuccessFactors\TestScenarios\tssample.xls"
+				
+				Set objxl = CreateObject("Excel.Application")
+				Set objxlwb = objxl.Workbooks.Open(scenario_file)
+				objxl.Application.Visible = False
+				
+				
+				
+				For h = 1 to test_cases.count Step 1
+					test_id = Split(test_cases.Item(h), "#")(0)
+					If document.getElementById(test_id).checked = True Then
+						value1 = "Y"
+					End If
+					If document.getElementById(test_id).checked = False Then
+						value1 = "N"
+					End If
+					objxl.Cells(h+1,2) =  value1
+				Next
+				
+				objxl.ActiveWorkbook.Save
+				objxl.ActiveWorkbook.Close
+				objxl.Application.Quit
+				Set objxl = Nothing
+				Msgbox "Scenario sheet setup - completed"
+				
+			End Function
+		</script>
+		
+		<script language="VBscript">
+			Function Set_Credentials()
+				'credentials_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Credentials\credentials.txt"
+				credentials_file = "D:\workspace\SuccessFactors\DataFiles\login_credentials.properties"
+				const ForWriting = 2
+				Dim oShell
+				Set oShell = CreateObject ("WScript.Shell")
+				oShell.run chr(34) & credentials_file & chr(34)
+			End Function
+		</script>
+		
+		<script language="VBscript">
+			Function View_Historic_Results()
+				'results_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Results"
+				results_file = "D:\workspace\SuccessFactors\Results"
+				Dim rShell
+				Set rShell = CreateObject("WScript.Shell")
+				rShell.run "explorer /n,/root," & results_file , 1, False
+			End Function
+		</script>
+		
+		<script language="VBscript">
+			Function View_Results()
+				''results_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Results"
+				Dim obj2
+				Dim tempLine
+				Set obj2 = CreateObject("Scripting.FileSystemObject").OpenTextFile("D:\workspace\SuccessFactors\Misc\currentResultsPath.txt",1)
+				tempLine = obj2.ReadLine()
+				obj2.Close
+				Set obj2 = Nothing
+				
+				results_file = "D:\workspace\SuccessFactors\Results\" & tempLine & "\main.html"
+				Dim rShell
+				Set rShell = CreateObject("WScript.Shell")
+				rShell.run "explorer /n,/root," & results_file , 1, False
+				
+			End Function
+		</script>
+
+		<script language="VBscript">
+			Function Execute_Test_Suite()
+				''Set App = CreateObject("QuickTest.Application")
+				''App.Launch
+				''App.Visible = True
+				''test_path = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Driver\Driver.tsp"
+				''App.Open chr(34) & test_path & chr(34)
+				''Set AppRun = App.Test
+				''AppRun.Run
+				'Dim test_file
+				'test_file = "Y:\AHS ALL SHARE\UFT_FrameWork\UFT_Framework\Miscellaneous\Wrapper\ExecuteQTP.vbs"
+				'dim kShell
+				'set kShell = CreateObject("WScript.Shell")
+				''kShell.run chr(34) & test_file & chr(34),1,True
+				'kShell.run chr(34) & test_file & chr(34)
+				Set kShell = CreateObject("WScript.Shell")
+				dim a
+				a = "D:\workspace\SuccessFactors\SF_JarFile_1.jar"
+				kShell.run "cmd /C  cd D:\workspace\SuccessFactors & java -jar SF_JarFile_1.jar" , 1, true 
+
+				form1.vr.disabled=false
+	
+			End Function
+		</script>
+
+		<script language="VBscript">
+			Function Select_All()
+				For h = 1 to test_cases.count Step 1
+					test_id = Split(test_cases.Item(h), "#")(0)
+					document.getElementById(test_id).checked = True
+				Next
+			End Function
+		</script>
+		<script>
+			Function Refresh()
+				Window.location.reload()
+			End Function
+		</script>
+		
+		
+	</body>
+</html>
+ 
